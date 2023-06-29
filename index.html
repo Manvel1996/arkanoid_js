@@ -8,6 +8,22 @@
     <script src="./js/script.js" defer></script>
   </head>
   <body>
-    
+    <div class="game">
+      <button class="game__restart">Restart</button>
+      <div class="game__info">
+        <h2 class="game__info-score">
+          Your Score <span class="game__score-count">0</span>
+        </h2>
+        <h2 class="game__info-fail">Your Fail <span class="game__fail-count">0</span></h2>
+      </div>
+
+      <canvas width="404" height="420" class="game-board"></canvas>
+    </div>
+    <div class="modal">
+        <div class="modal__content">
+          <span class="modal__close">&times;</span>
+          <p class="modal__text"></p>
+        </div>
+      </div>
   </body>
 </html>
