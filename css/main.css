@@ -19,7 +19,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 50px; }
+  padding-top: 50px;
+  height: min-content; }
   .game__restart {
     padding: 5px;
     cursor: pointer;
