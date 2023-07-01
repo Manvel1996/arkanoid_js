@@ -122,20 +122,20 @@ function update() {
     fail.textContent = +fail.textContent + 1;
 
     data.ball.x = data.paddle.x + data.paddle.width / 2 - data.ball.size / 2;
-    data.ball.y = canvas.height - data.brick.height;
+    data.ball.y = canvas.height - data.paddle.height - data.ball.size;
     data.ball.xDelta = 0;
     data.ball.yDelta = 0;
   } else if (data.ball.xDelta === 0 && data.ball.yDelta === 0) {
     data.ball.x = data.paddle.x + data.paddle.width / 2 - data.ball.size / 2;
-    data.ball.y = canvas.height - data.brick.height;
+    data.ball.y = canvas.height - data.paddle.height - data.ball.size;
   }
 
   if (collides(data.ball, data.paddle)) {
     if (data.ball.y + data.ball.size + data.ball.speed <= data.paddle.y) {
       data.ball.yDelta *= -1;
       data.ball.y = data.paddle.y - data.ball.size;
-    }else{
-      data.ball.xDelta *= -1
+    } else {
+      data.ball.xDelta *= -1;
     }
   }
 }
