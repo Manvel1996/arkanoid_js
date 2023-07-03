@@ -9,16 +9,6 @@ const modal = document.querySelector(".modal");
 const modalClose = document.querySelector(".modal__close");
 const modalText = document.querySelector(".modal__text");
 
-modalClose.addEventListener("click", () => {
-  modal.style.display = "none";
-});
-
-window.addEventListener("click", (event) => {
-  if (event.target === modal) {
-    modal.style.display = "none";
-  }
-});
-
 const data = {
   wall: {
     size: 2,
@@ -35,7 +25,7 @@ const data = {
 
   ball: {
     x: canvas.width / 2 - 40 - 5,
-    y: canvas.height - 10 - 10,
+    y: canvas.height - 30 - 10,
     size: 10,
     speed: -5,
     xDelta: 0,
@@ -44,7 +34,7 @@ const data = {
 
   paddle: {
     x: canvas.width / 2 - 40,
-    y: canvas.height - 10,
+    y: canvas.height - 30,
     width: 80,
     height: 10,
     xDelta: 0,
@@ -122,12 +112,12 @@ function update() {
     fail.textContent = +fail.textContent + 1;
 
     data.ball.x = data.paddle.x + data.paddle.width / 2 - data.ball.size / 2;
-    data.ball.y = canvas.height - data.paddle.height - data.ball.size;
+    data.ball.y = data.paddle.y - data.ball.size;
     data.ball.xDelta = 0;
     data.ball.yDelta = 0;
   } else if (data.ball.xDelta === 0 && data.ball.yDelta === 0) {
     data.ball.x = data.paddle.x + data.paddle.width / 2 - data.ball.size / 2;
-    data.ball.y = canvas.height - data.paddle.height - data.ball.size;
+    data.ball.y = data.paddle.y - data.ball.size;
   }
 
   if (collides(data.ball, data.paddle)) {
@@ -135,7 +125,9 @@ function update() {
       data.ball.yDelta *= -1;
       data.ball.y = data.paddle.y - data.ball.size;
     } else {
+      data.ball.yDelta *= -1;
       data.ball.xDelta *= -1;
+      data.ball.y = data.paddle.y - data.ball.size;
     }
   }
 }
@@ -202,6 +194,16 @@ function loop() {
   update();
   drow();
 }
+
+modalClose.addEventListener("click", () => {
+  modal.style.display = "none";
+});
+
+window.addEventListener("click", (event) => {
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+});
 
 document.addEventListener("keydown", function (e) {
   if (e.code === "ArrowLeft") {
