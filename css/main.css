@@ -28,20 +28,26 @@ body {
     color: white;
     background-color: black;
     height: 25px;
-    transition: all 0.5s; }
+    transition: all 0.5s;
+    pointer-events: visibleFill; }
     .game__restart:hover {
       color: black;
       background-color: white;
       border: 1px solid black; }
-  .game__info {
+  .game .info {
     display: flex;
     flex-direction: column;
     margin-bottom: 10px;
     padding: 5px; }
-  .game__score-count {
-    color: green; }
-  .game__fail-count {
-    color: red; }
+    .game .info__start {
+      color: green;
+      padding-block: 20px; }
+      .game .info__start--opacity {
+        opacity: 0; }
+    .game .info__score--green {
+      color: green; }
+    .game .info__fail--red {
+      color: red; }
 
 .modal {
   display: none;
@@ -72,7 +78,7 @@ body {
     position: absolute;
     right: 8px;
     top: 0px;
-    font-size: 28px;
+    font-size: 1.5rem;
     font-weight: bold; }
     .modal__close:hover, .modal__close:focus {
       color: #000;

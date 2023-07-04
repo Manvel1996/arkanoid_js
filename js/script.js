@@ -1,45 +1,33 @@
-const canvas = document.querySelector(".game-board");
+const canvas = document.querySelector(".game__board");
 const context = canvas.getContext("2d");
 
-const score = document.querySelector(".game__score-count");
-const fail = document.querySelector(".game__fail-count");
+const startInfo = document.querySelector(".info__start");
+
+const score = document.querySelector(".info__score--green");
+score.innerText = 0;
+
+const fail = document.querySelector(".info__fail--red");
+fail.innerText = 0;
+
 const restartBtn = document.querySelector(".game__restart");
 
 const modal = document.querySelector(".modal");
 const modalClose = document.querySelector(".modal__close");
 const modalText = document.querySelector(".modal__text");
 
-const data = {
-  wall: {
-    size: 2,
-  },
+const paddleWidth = 80;
+const paddleHeight = 10;
+const paddleY = 30;
+const paddleXDelta = 3;
 
-  bricks: [],
+const ballSize = 10;
+const ballSpeed = 4;
 
-  brick: {
-    x: 0,
-    y: 0,
-    height: 20,
-    width: 30,
-  },
+const brickHeight = 20;
 
-  ball: {
-    x: canvas.width / 2 - 40 - 5,
-    y: canvas.height - 30 - 10,
-    size: 10,
-    speed: -5,
-    xDelta: 0,
-    yDelta: 0,
-  },
+let lose = false;
 
-  paddle: {
-    x: canvas.width / 2 - 40,
-    y: canvas.height - 30,
-    width: 80,
-    height: 10,
-    xDelta: 0,
-  },
-};
+let data = {};
 
 function collides(obj1, obj2) {
   return (
@@ -50,32 +38,57 @@ function collides(obj1, obj2) {
   );
 }
 
-function startGame() {
-  function randomColor() {
-    let myRed = Math.floor(Math.random() * 256);
-    let myGreen = Math.floor(Math.random() * 256);
-    let myBlue = Math.floor(Math.random() * 256);
-    return `rgb(${myRed}, ${myGreen}, ${myBlue})`;
-  }
+function randomColor() {
+  let myRed = Math.floor(Math.random() * 256);
+  let myGreen = Math.floor(Math.random() * 256);
+  let myBlue = Math.floor(Math.random() * 256);
+  return `rgb(${myRed}, ${myGreen}, ${myBlue})`;
+}
 
-  data.brick.x = Math.ceil(Math.random() * 8);
-  if (data.brick.x < 3) data.brick.x = 3;
+function createGameData() {
+  data = {
+    wall: {
+      size: 2,
+    },
 
-  for (let row = 0; row < data.brick.x; row++) {
-    data.brick.y = Math.ceil(Math.random() * 8);
-    if (data.brick.y < 3) data.brick.y = 3;
+    bricks: [],
 
-    data.brick.width = (canvas.width - data.wall.size * 2) / data.brick.y;
+    ball: {
+      x: canvas.width / 2 - ballSize / 2,
+      y: canvas.height - paddleY - paddleHeight,
+      size: ballSize,
+      speed: ballSpeed,
+      xDelta: 0,
+      yDelta: 0,
+    },
 
-    for (let col = 0; col < data.brick.y; col++) {
+    paddle: {
+      x: canvas.width / 2 - paddleWidth / 2,
+      y: canvas.height - paddleY,
+      width: paddleWidth,
+      height: paddleHeight,
+      xDelta: 0,
+    },
+  };
+
+  const brick = {};
+
+  brick.x = Math.ceil(Math.random() * 5 + 3);
+
+  for (let row = 0; row < brick.x; row++) {
+    brick.y = Math.ceil(Math.random() * 5 + 3);
+
+    brick.width = (canvas.width - data.wall.size * 2) / brick.y;
+
+    for (let col = 0; col < brick.y; col++) {
       const colorCode = randomColor();
 
       data.bricks.push({
-        x: data.wall.size + data.brick.width * col,
-        y: data.wall.size + data.brick.height * row,
+        x: data.wall.size + brick.width * col,
+        y: data.wall.size + brickHeight * row,
         color: colorCode,
-        width: data.brick.width,
-        height: data.brick.height,
+        width: brick.width,
+        height: brickHeight,
       });
     }
   }
@@ -83,6 +96,7 @@ function startGame() {
 
 function update() {
   data.paddle.x += data.paddle.xDelta;
+
   if (data.paddle.x < data.wall.size) {
     data.paddle.x = data.wall.size;
   } else if (
@@ -115,24 +129,27 @@ function update() {
     data.ball.y = data.paddle.y - data.ball.size;
     data.ball.xDelta = 0;
     data.ball.yDelta = 0;
-  } else if (data.ball.xDelta === 0 && data.ball.yDelta === 0) {
-    data.ball.x = data.paddle.x + data.paddle.width / 2 - data.ball.size / 2;
-    data.ball.y = data.paddle.y - data.ball.size;
+
+    startInfo.classList.remove("info__start--opacity");
+    lose = true;
   }
 
   if (collides(data.ball, data.paddle)) {
-    if (data.ball.y + data.ball.size + data.ball.speed <= data.paddle.y) {
+    if (data.ball.y + data.ball.size - data.ball.speed <= data.paddle.y) {
       data.ball.yDelta *= -1;
       data.ball.y = data.paddle.y - data.ball.size;
     } else {
-      data.ball.yDelta *= -1;
       data.ball.xDelta *= -1;
-      data.ball.y = data.paddle.y - data.ball.size;
+      if (data.ball.x < data.paddle.x) {
+        data.ball.x = data.paddle.x - data.ball.size;
+      } else {
+        data.ball.x = data.paddle.x + data.paddle.width;
+      }
     }
   }
 }
 
-function drow() {
+function draw() {
   context.clearRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < data.bricks.length; i++) {
     const brick = data.bricks[i];
@@ -141,8 +158,8 @@ function drow() {
       score.textContent = +score.textContent + 1;
       data.bricks.splice(i, 1);
       if (
-        data.ball.y + data.ball.size + data.ball.speed <= brick.y ||
-        data.ball.y >= brick.y + brick.height + data.ball.speed
+        data.ball.y + data.ball.size - data.ball.speed <= brick.y ||
+        data.ball.y >= brick.y + brick.height - data.ball.speed
       ) {
         data.ball.yDelta *= -1;
       } else {
@@ -188,11 +205,13 @@ function loop() {
     modalText.innerText = "Yay you win";
     modal.style.display = "block";
     return;
+  } else if (lose) {
+    return;
   }
 
   requestAnimationFrame(loop);
   update();
-  drow();
+  draw();
 }
 
 modalClose.addEventListener("click", () => {
@@ -205,31 +224,74 @@ window.addEventListener("click", (event) => {
   }
 });
 
-document.addEventListener("keydown", function (e) {
+window.addEventListener("keydown", function (e) {
   if (e.code === "ArrowLeft") {
-    data.paddle.xDelta = -3;
-  } else if (e.code === "ArrowRight") {
-    data.paddle.xDelta = 3;
+    if (data.ball.xDelta === 0 && data.ball.yDelta === 0) {
+      if (data.paddle.x - paddleXDelta <= data.wall.size) {
+        data.paddle.x = data.wall.size;
+        draw();
+        return;
+      }
+      data.paddle.x += -paddleXDelta;
+      data.ball.x += -paddleXDelta;
+      draw();
+    } else {
+      data.paddle.xDelta = -paddleXDelta;
+    }
   }
 
-  if (data.ball.xDelta === 0 && data.ball.yDelta === 0 && e.code === "Space") {
-    Math.random() >= 0.5
-      ? ((data.ball.xDelta = data.ball.speed),
-        (data.ball.yDelta = data.ball.speed))
-      : ((data.ball.xDelta = -data.ball.speed),
-        (data.ball.yDelta = -data.ball.speed));
+  if (e.code === "ArrowRight") {
+    if (data.ball.xDelta === 0 && data.ball.yDelta === 0) {
+      if (
+        data.paddle.x + data.paddle.width + paddleXDelta >=
+        canvas.width - data.wall.size
+      ) {
+        data.paddle.x = canvas.width - data.paddle.width - data.wall.size;
+        draw();
+        return;
+      }
+      data.paddle.x += paddleXDelta;
+      data.ball.x += paddleXDelta;
+      draw();
+    } else {
+      data.paddle.xDelta = paddleXDelta;
+    }
   }
 });
 
-document.addEventListener("keyup", function (e) {
+window.addEventListener("keyup", function (e) {
   if (e.code === "ArrowRight" || e.code === "ArrowLeft") {
     data.paddle.xDelta = 0;
   }
+
+  if (data.ball.xDelta === 0 && data.ball.yDelta === 0 && e.code === "Space") {
+    lose = false;
+    startInfo.classList.add("info__start--opacity");
+    e.stopPropagation();
+    Math.random() >= 0.5
+      ? ((data.ball.xDelta = -data.ball.speed),
+        (data.ball.yDelta = -data.ball.speed))
+      : ((data.ball.xDelta = data.ball.speed),
+        (data.ball.yDelta = -data.ball.speed));
+
+    loop();
+  }
 });
 
-restartBtn.addEventListener("click", () => {
-  location.reload();
+restartBtn.addEventListener("click", (e) => {
+  e.target.blur();
+
+  lose = true;
+
+  score.innerText = 0;
+  fail.innerText = 0;
+
+  startInfo.classList.remove("info__start--opacity");
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  createGameData();
+  draw();
 });
 
-startGame();
-loop();
+createGameData();
+draw();

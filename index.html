@@ -10,20 +10,21 @@
   <body>
     <div class="game">
       <button class="game__restart">Restart</button>
-      <div class="game__info">
-        <h2 class="game__info-score">
-          Your Score <span class="game__score-count">0</span>
-        </h2>
-        <h2 class="game__info-fail">Your Fail <span class="game__fail-count">0</span></h2>
+
+      <div class="info">
+        <h2 class="info__start">Press space key to start game</h2>
+        <h2 class="info__score">Your Score <span class="info__score--green"></span></h2>
+        <h2 class="info__fail">Your Fail <span class="info__fail--red"></span></h2>
       </div>
 
-      <canvas width="404" height="420" class="game-board"></canvas>
+      <canvas width="404" height="420" class="game__board"></canvas>
     </div>
+
     <div class="modal">
-        <div class="modal__content">
-          <span class="modal__close">&times;</span>
-          <p class="modal__text"></p>
-        </div>
+      <div class="modal__content">
+        <span class="modal__close">&times;</span>
+        <p class="modal__text"></p>
       </div>
+    </div>
   </body>
 </html>
