@@ -2,13 +2,8 @@ const canvas = document.querySelector(".game__board");
 const context = canvas.getContext("2d");
 
 const startInfo = document.querySelector(".info__start");
-
 const score = document.querySelector(".info__score--green");
-score.innerText = 0;
-
-const fail = document.querySelector(".info__fail--red");
-fail.innerText = 0;
-
+const fail = document.querySelector(".info__score--red");
 const restartBtn = document.querySelector(".game__restart");
 
 const modal = document.querySelector(".modal");
@@ -25,8 +20,18 @@ const ballSpeed = 4;
 
 const brickHeight = 20;
 
-let lose = false;
+const wallSize = 2;
 
+const rowMax = 5;
+const rowMin = 3;
+
+let scoreCount = 0;
+let failCount = 0;
+
+score.innerText = scoreCount;
+fail.innerText = failCount;
+
+let lose = true;
 let data = {};
 
 function collides(obj1, obj2) {
@@ -39,16 +44,16 @@ function collides(obj1, obj2) {
 }
 
 function randomColor() {
-  let myRed = Math.floor(Math.random() * 256);
-  let myGreen = Math.floor(Math.random() * 256);
-  let myBlue = Math.floor(Math.random() * 256);
-  return `rgb(${myRed}, ${myGreen}, ${myBlue})`;
+  const red = Math.floor(Math.random() * 256);
+  const green = Math.floor(Math.random() * 256);
+  const blue = Math.floor(Math.random() * 256);
+  return `rgb(${red}, ${green}, ${blue})`;
 }
 
-function createGameData() {
+function initGame() {
   data = {
     wall: {
-      size: 2,
+      size: wallSize,
     },
 
     bricks: [],
@@ -73,10 +78,10 @@ function createGameData() {
 
   const brick = {};
 
-  brick.x = Math.ceil(Math.random() * 5 + 3);
+  brick.x = Math.ceil(Math.random() * rowMax + rowMin);
 
   for (let row = 0; row < brick.x; row++) {
-    brick.y = Math.ceil(Math.random() * 5 + 3);
+    brick.y = Math.ceil(Math.random() * rowMax + rowMin);
 
     brick.width = (canvas.width - data.wall.size * 2) / brick.y;
 
@@ -94,7 +99,7 @@ function createGameData() {
   }
 }
 
-function update() {
+function calculateGamePlay() {
   data.paddle.x += data.paddle.xDelta;
 
   if (data.paddle.x < data.wall.size) {
@@ -123,7 +128,7 @@ function update() {
   }
 
   if (data.ball.y > canvas.height) {
-    fail.textContent = +fail.textContent + 1;
+    fail.textContent = ++failCount;
 
     data.ball.x = data.paddle.x + data.paddle.width / 2 - data.ball.size / 2;
     data.ball.y = data.paddle.y - data.ball.size;
@@ -155,7 +160,7 @@ function draw() {
     const brick = data.bricks[i];
 
     if (collides(data.ball, brick)) {
-      score.textContent = +score.textContent + 1;
+      score.textContent = ++scoreCount;
       data.bricks.splice(i, 1);
       if (
         data.ball.y + data.ball.size - data.ball.speed <= brick.y ||
@@ -202,31 +207,37 @@ function draw() {
 
 function loop() {
   if (data.bricks.length === 0) {
-    modalText.innerText = "Yay you win";
-    modal.style.display = "block";
+    openModal("Yay you win");
     return;
   } else if (lose) {
     return;
   }
 
-  requestAnimationFrame(loop);
-  update();
+  calculateGamePlay();
   draw();
+  requestAnimationFrame(loop);
 }
 
-modalClose.addEventListener("click", () => {
+function openModal(text) {
+  modalText.innerText = text;
+  modal.style.display = "block";
+}
+
+function closeModal() {
   modal.style.display = "none";
-});
+}
+
+modalClose.addEventListener("click", closeModal);
 
 window.addEventListener("click", (event) => {
   if (event.target === modal) {
-    modal.style.display = "none";
+    closeModal();
   }
 });
 
 window.addEventListener("keydown", function (e) {
   if (e.code === "ArrowLeft") {
-    if (data.ball.xDelta === 0 && data.ball.yDelta === 0) {
+    if (lose) {
       if (data.paddle.x - paddleXDelta <= data.wall.size) {
         data.paddle.x = data.wall.size;
         draw();
@@ -241,7 +252,7 @@ window.addEventListener("keydown", function (e) {
   }
 
   if (e.code === "ArrowRight") {
-    if (data.ball.xDelta === 0 && data.ball.yDelta === 0) {
+    if (lose) {
       if (
         data.paddle.x + data.paddle.width + paddleXDelta >=
         canvas.width - data.wall.size
@@ -264,7 +275,7 @@ window.addEventListener("keyup", function (e) {
     data.paddle.xDelta = 0;
   }
 
-  if (data.ball.xDelta === 0 && data.ball.yDelta === 0 && e.code === "Space") {
+  if (lose && e.code === "Space") {
     lose = false;
     startInfo.classList.add("info__start--opacity");
     e.stopPropagation();
@@ -283,15 +294,17 @@ restartBtn.addEventListener("click", (e) => {
 
   lose = true;
 
-  score.innerText = 0;
-  fail.innerText = 0;
+  scoreCount = 0;
+  failCount = 0;
+  score.innerText = scoreCount;
+  fail.innerText = failCount;
 
   startInfo.classList.remove("info__start--opacity");
 
   context.clearRect(0, 0, canvas.width, canvas.height);
-  createGameData();
+  initGame();
   draw();
 });
 
-createGameData();
+initGame();
 draw();
